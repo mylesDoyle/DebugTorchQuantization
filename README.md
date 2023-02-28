@@ -13,7 +13,7 @@ To highlight the issue, we set up a simple toy example as follows;
 
 ### Model
 
- A simple Conv-ReLU fused model is defined with 
+A simple Conv-ReLU fused model is defined with 
 - bias set to zero
 - conv weights set to `k*I` where `k` is some floating point scalar multiplier and `I` represents an identity matrix of the correct shape for the conv layer
 - A quantization stub which quantizes the `fp32` inputs to `quint8`
