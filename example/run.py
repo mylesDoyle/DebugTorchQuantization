@@ -32,7 +32,7 @@ if __name__ == "__main__":
     input_fp32 = torch.arange(0,256).repeat(1,3,256,1)/255.0   # 0 to 255 repeated across rows, then normalized to [0,1]
 
     model = FooConv1x1(set_qconfig=True)    # Prepare model with QConfig defined
-    k = .5 # Set Conv layer multiplier
+    k = 1.0 # Set Conv layer multiplier
     model.set_weights(k)    # Set bias to zero and conv weights to k*Identity
     model.fuse()    # fuse conv and ReLU 
 
@@ -44,6 +44,7 @@ if __name__ == "__main__":
     set_qconfig_params(model_prepared, k)   # Set quantization parameters to theoretical values
 
     expected_output_fp32 = model_prepared(input_fp32)
+    expected_output_quint8 = (expected_output_fp32*(k*255)).to(torch.uint8)
     
     model_prepared.dequant = torch.nn.Identity()    # Disable the output dequant stub
 
@@ -56,11 +57,12 @@ if __name__ == "__main__":
     error_mean = torch.mean(error)
     error_max = torch.max(error)
     first_nonzero_index = error.nonzero()[0].tolist()
+
     print(f"{error_mean=}")
     print(f"{error_max=}")
     print(f"First nonzero: index: ({first_nonzero_index}")
     print(f"\tvalue fp32: {error[*first_nonzero_index]}")
-    print(f"\tvalue expected quint8: {expected_output_fp32[*first_nonzero_index]*255/k}")
+    print(f"\tvalue expected quint8: {expected_output_quint8[*first_nonzero_index]}")
     print(f"\tvalue outputed quint8: {output_quint8_fp32.int_repr()[*first_nonzero_index]}")
 
     # import ipdb; ipdb.set_trace()
