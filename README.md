@@ -63,4 +63,8 @@ tensor([  0,   1, ..., 126, 127, 127, 128, 129, 130, ..., 252, 253, 254], dtype=
     - a discrepancy can be seen as the value 127 is repeated twice, and all other values are shifted after that
     - this results in the repeated 127 value being the incorrect bin for its expected dequantized value, and all other values following this duplication have been shifted to incorrect bins as well
     - this behaviour is unexpected and results in non-determinism across both model's execution
+    - note, it is interesting that this discrepancy appears for `128=255/2+1` and all following values due to 128 being halway bin of the possible range of bins 
 
+## Conclusion
+
+One of the main reasons for using quantization is to ensure determinism across different compute platforms, so the non-deterministic behaviour between a fake and real quantized model is extremely problematic, especially when it comes to deploying quantized models. It is clear from this example that the real quantized model is not working as expected. This must either be due to an error I have in my implementation or a bug within PyTorch. 
